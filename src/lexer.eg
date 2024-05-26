@@ -4,13 +4,16 @@ import "regex.ego"
 namespace Position (
     data position
 
-    def + = [(position URL X Y) (DX, DY) -> position URL (X System::+ DX) (Y System::+ DY)]
-
     def to_text = [(position URL X Y) -> System::format "{} {} {}" URL X Y]
+
+    def deltay = [(position URL X Y) DY -> position URL X (Y System::+ DY)]
+
+    def deltax = [(position URL X Y) DX -> position URL (X System::+ DX) Y]
+
+    def delta_len = [POS S -> deltay POS (String::length S)]
 )
 
 namespace Lexer (
-
     using Position
     using System
     using List
@@ -23,7 +26,7 @@ namespace Lexer (
         [(token_class C R DELTA) (POS, S) -> 
             Regex::look_match R S
             ||> [ S0 -> (String::split (String::count_char S0) S) ] 
-            ||> [ (S0, S1) -> (token C POS S0, (POS Position::+ DELTA S) S1) ]]
+            ||> [ (S0, S1) -> (token C POS S0, (DELTA POS S) S1) ]]
 
     def try_all = [{} X -> none | {F|FF} X -> let Y = F X in if Y == none then try_all FF X else Y]
 
@@ -38,3 +41,4 @@ namespace Lexer (
         [TT URL S -> lexify0 (map token_class_compile TT |> map match_class) (position URL 0 0, S)]
 
 )
+
