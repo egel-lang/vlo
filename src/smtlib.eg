@@ -39,5 +39,5 @@ namespace SMTLIB (
 )
 
 def main =
-    Lexer::lexify SMTLIB::lexemes "test" "(a ++) 12456 3.14 | a longer token | "
+    Lexer::lexify SMTLIB::lexemes "test" "(a ++) 12456 3.14 | a longer token |\nnextline"
 
