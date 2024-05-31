@@ -63,10 +63,11 @@ namespace SMTLIB (
         <+> (is_token hexadecimal <@> [(token POS T S) -> hexadecimal POS S])
         <+> (is_token binary <@> [(token POS T S) -> binary POS S])
         <+> (is_token string <@> [(token POS T S) -> string POS S])
+        <+> (is_token symbol <@> [(token POS T S) -> symbol POS S])
         <+> (pos <*> [POS -> is_token lparen <*> [_ -> plus parse_sexpr <*> [SS -> is_token rparen <@> [_ -> sexpr POS SS]]]])
         ) <!> "sexpr expected"
 
-    def parse_full = plus parse_sexpr <*> [SS -> eof <@> [_ -> SS]]
+    def parse_full = plus parse_sexpr # <+> raise
 
     def parse = 
         search parse_full [X _ -> X] [M TT -> throw ("parse error:" M (List::head TT))] [M TT -> throw ("parse error:" M (List::head TT))]
@@ -76,6 +77,7 @@ using System
 
 def main =
 #    Lexer::lexify SMTLIB::lexemes "test" "(a ++) 12456 3.14 | a longer token |\nnextline"
-    Lexer::lexify SMTLIB::lexemes "test" "1.1 2.2" |> SMTLIB::filter_whitespace
+    Lexer::lexify SMTLIB::lexemes "test" "a"
+    |> SMTLIB::filter_whitespace
     |> SMTLIB::parse
 
