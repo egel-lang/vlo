@@ -32,7 +32,7 @@ namespace Lexer (
         [(token_class C R FX FY) (POS, S) -> 
             Regex::look_match R S
             ||> [ S0 -> (String::split (String::count_char S0) S) ] 
-            ||> [ (S0, S1) -> (token C POS S0, (update FX FY POS S, S1)) ]]
+            ||> [ (S0, S1) -> (token C POS S0, (update FX FY POS S0, S1)) ]]
 
     def try_all = [{} X -> none | {F|FF} X -> let Y = F X in if Y == none then try_all FF X else Y]
 
@@ -40,7 +40,7 @@ namespace Lexer (
         [TT (_, "") -> {} 
         |TT (POS, S) -> 
             [none -> throw (format "lexer error at: {}" (Position::to_text POS))
-            |(T,(POS,S)) -> {T| lexify0 TT (POS,S)}] 
+            |(T,(POS,S)) -> print T "\n";{T| lexify0 TT (POS,S)}] 
                 (try_all TT (POS,S))]
 
     def lexify = 
