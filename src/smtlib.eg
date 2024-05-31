@@ -50,28 +50,32 @@ namespace SMTLIB (
 
     def skip = [{} -> fail {} |{T|TT} -> success T TT]
 
-    def eof = [{} -> success none {} |TT -> fail TT]
+    def eof = [{} -> success none {} |TT -> fail TT] <!> "eof expected"
 
     def is_token = [T0 -> look <*> [(token POS T1 S) -> if T0 == T1 then skip else fail]]
 
     def pos = look <*> [(token POS T S) -> POS]
 
     def parse_sexpr =
+        (
             (is_token decimal <@> [(token POS T S) -> decimal POS S])
         <+> (is_token numeral <@> [(token POS T S) -> numeral POS S])
         <+> (is_token hexadecimal <@> [(token POS T S) -> hexadecimal POS S])
         <+> (is_token binary <@> [(token POS T S) -> binary POS S])
         <+> (is_token string <@> [(token POS T S) -> string POS S])
-        <+> (pos <*> [POS -> is_token lparen <*> plus parse_sexpr <*> [SS -> is_token rparen <*> [_ -> sexpr POS SS]]])
+        <+> (pos <*> [POS -> is_token lparen <*> [_ -> plus parse_sexpr <*> [SS -> is_token rparen <*> [_ -> sexpr POS SS]]]])
+        ) <!> "sexpr expected"
 
     def parse_full = plus parse_sexpr <*> [SS -> eof <@> [_ -> SS]]
 
-    def parse = search parse_full [X _ -> X] [M _ -> throw M] [M _ -> throw M]
+    def parse = 
+        search parse_full [X _ -> X] [M TT -> throw ("parse error:" M (List::head TT))] [M TT -> throw ("parse error:" M (List::head TT))]
 )
 
 using System
 
 def main =
-    Lexer::lexify SMTLIB::lexemes "test" "(a ++) 12456 3.14 | a longer token |\nnextline"
+#    Lexer::lexify SMTLIB::lexemes "test" "(a ++) 12456 3.14 | a longer token |\nnextline"
+    Lexer::lexify SMTLIB::lexemes "test" "1.1"
 #    |> SMTLIB::parse
 
