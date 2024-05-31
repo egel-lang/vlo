@@ -37,7 +37,7 @@ namespace SMTLIB (
         token_class symbol "\\|([^\\|])*\\|" deltarow deltacol
     }
 
-    def filter_whitespace = List::filter [(token POS T S) -> T == whitespace]
+    def filter_whitespace = List::filter [(token POS T S) -> T /= whitespace]
 
 )
 
@@ -63,7 +63,7 @@ namespace SMTLIB (
         <+> (is_token hexadecimal <@> [(token POS T S) -> hexadecimal POS S])
         <+> (is_token binary <@> [(token POS T S) -> binary POS S])
         <+> (is_token string <@> [(token POS T S) -> string POS S])
-        <+> (pos <*> [POS -> is_token lparen <*> [_ -> plus parse_sexpr <*> [SS -> is_token rparen <*> [_ -> sexpr POS SS]]]])
+        <+> (pos <*> [POS -> is_token lparen <*> [_ -> plus parse_sexpr <*> [SS -> is_token rparen <@> [_ -> sexpr POS SS]]]])
         ) <!> "sexpr expected"
 
     def parse_full = plus parse_sexpr <*> [SS -> eof <@> [_ -> SS]]
@@ -76,6 +76,6 @@ using System
 
 def main =
 #    Lexer::lexify SMTLIB::lexemes "test" "(a ++) 12456 3.14 | a longer token |\nnextline"
-    Lexer::lexify SMTLIB::lexemes "test" "1.1"
-#    |> SMTLIB::parse
+    Lexer::lexify SMTLIB::lexemes "test" "1.1 2.2" |> SMTLIB::filter_whitespace
+    |> SMTLIB::parse
 
