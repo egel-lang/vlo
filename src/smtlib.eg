@@ -27,23 +27,17 @@ namespace SMTLIB (
         token_class whitespace "\n" (deltax 1) (sety 0),
         token_class lparen "\\(" k (deltay 1),
         token_class rparen "\\)" k (deltay 1),
-        token_class numeral "[1-9][0-9]*" k deltal,
         token_class decimal "[1-9][0-9]*\\.[0-9]+" k deltal,
+        token_class numeral "[1-9][0-9]*" k deltal,
         token_class hexadecimal "#x[0-9a-fA-F]*" k deltal,
         token_class binary "#b[0-1]*" k deltal,
         token_class string "\"(^(\"\"))*\"" deltarow deltacol,
         token_class symbol "([~!@$%^&\\*_\\-\\+=<>\\.?/]|[a-z]|[A-Z])([~!@$%^&\\*_\\-\\+=<>\\.?/]|[a-z]|[A-Z]|[0-9])*" k deltal,
         token_class symbol "\\|([^\\|])*\\|" deltarow deltacol
-        #token_class symbol "\\|(^|)*\\|" deltarow deltacol
     }
 
 )
 
-using System
-
 def main =
-#    SMTLIB::lexemes |> List::map Lexer::token_class_compile
-    Lexer::lexify SMTLIB::lexemes "test" "(a b) c | a longer token |"
-#    [{_, _, FN} -> OS::read_all (OS::open_in FN) 
-#    |_ -> System::print "usage: egel smtlib.eg <fn>\n"] System::args
+    Lexer::lexify SMTLIB::lexemes "test" "(a ++) 12456 3.14 | a longer token | "
 

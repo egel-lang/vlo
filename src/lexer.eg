@@ -40,7 +40,7 @@ namespace Lexer (
         [TT (_, "") -> {} 
         |TT (POS, S) -> 
             [none -> throw (format "lexer error at: {}" (Position::to_text POS))
-            |(T,(POS,S)) -> print T "\n";{T| lexify0 TT (POS,S)}] 
+            |(T,(POS,S)) -> {T| lexify0 TT (POS,S)}] 
                 (try_all TT (POS,S))]
 
     def lexify = 
