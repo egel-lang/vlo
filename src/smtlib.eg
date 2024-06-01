@@ -86,7 +86,7 @@ namespace SMTLIB (
             if width N (sexpr none SS) < cutoff then
                 "(" + (map (render 0 0) SS |> reduce [S0 S1 -> S0 + " " + S1]) + ")"
             else
-                "(\n" + (map (render (W+4) (W+4)) SS |> map ((+) (spaces (W+4))) |> reduce [S0 S1 -> S0 + "\n" + S1]) + ")"
+                "(\n" + (map (render (W+4) (W+4)) SS |> map ((+) (spaces (W+4))) |> reduce [S0 S1 -> S0 + "\n" + S1]) + "\n" + spaces W + ")"
         |W N (_ _ S) -> S]
 
     def pretty = render 0 0
@@ -95,7 +95,7 @@ namespace SMTLIB (
 using System
 
 def main =
-    Lexer::lexify SMTLIB::lexemes "test" "(a ++) 12456 3.14 | a longer token |\nnextline"
+    Lexer::lexify SMTLIB::lexemes "test" "(a ++ (12456 3.14) | a longer token |)\nnextline"
     |> SMTLIB::filter_whitespace
     |> SMTLIB::parse
     |> List::map SMTLIB::pretty
