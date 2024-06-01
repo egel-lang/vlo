@@ -75,7 +75,7 @@ namespace SMTLIB (
     def spaces = [N -> List::repeat N ' ' |> pack]
 
     def width =
-        [N -> if cutoff < N then N else
+        [N -> if cutoff < N then [_ -> N] else
             [(sexpr _ {}) -> N + 1
             |(sexpr _ {S|SS}) -> width (width (N + 1) S) (sexpr none SS)
             |(_ _ S) -> N + String::length S ]]
