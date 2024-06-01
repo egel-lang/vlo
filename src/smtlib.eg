@@ -69,17 +69,27 @@ namespace SMTLIB (
 
 namespace SMTLIB (
     using System
+    using List
  
     def cutoff = 70
  
     def spaces = [N -> List::repeat N ' ' |> pack]
 
-    # uh, either lay out horizontally or vertically, that's what I remember
-    def render =
-        [ N (sexpr _ SS) -> 0
-        | N (_ _ S) -> S ]
+    def width =
+        [N -> if cutoff < N then N else
+            [(sexpr _ {}) -> N + 1
+            |(sexpr _ {S|SS}) -> width (width (N + 1) S) (sexpr none SS)
+            |(_ _ S) -> N + String::length S ]]
 
-    def pretty = render 0
+    def render =
+        [W N (sexpr _ SS) -> 
+            if width N (sexpr none SS) < cutoff then
+                "(" + (map (render 0 0) SS |> reduce [S0 S1 -> S0 + " " + S1]) + ")"
+            else
+                "(\n" + (map (render (W+4) (W+4)) SS |> map ((+) (spaces (W+4))) |> reduce [S0 S1 -> S0 + "\n" + S1]) + ")"
+        |W N (_ _ S) -> S]
+
+    def pretty = render 0 0
 )
 
 using System
