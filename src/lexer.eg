@@ -24,15 +24,13 @@ namespace Lexer (
     using System
     using List
 
-    data token, token_class
-
-    def token_class_compile = [(token_class ID REGEX FX FY) -> token_class ID (Regex::compile REGEX) FX FY]
+    def token_class_compile = [(ID REGEX FX FY) -> ID (Regex::compile REGEX) FX FY]
 
     def match_class = 
-        [(token_class C R FX FY) (POS, S) -> 
+        [(ID R FX FY) (POS, S) -> 
             Regex::look_match R S
             ||> [ S0 -> (String::split (String::count_char S0) S) ] 
-            ||> [ (S0, S1) -> (token POS C S0, (update FX FY POS S0, S1)) ]]
+            ||> [ (S0, S1) -> (ID POS S0, (update FX FY POS S0, S1)) ]]
 
     def try_all = [{} X -> none | {F|FF} X -> let Y = F X in if Y == none then try_all FF X else Y]
 

@@ -23,21 +23,21 @@ namespace SMTLIB (
 
     def lexemes =
     {
-        token_class whitespace " +" k deltal,
-        token_class whitespace "\t" k (deltay 4),
-        token_class whitespace "\n" (deltax 1) (sety 0),
-        token_class lparen "\\(" k (deltay 1),
-        token_class rparen "\\)" k (deltay 1),
-        token_class decimal "[1-9][0-9]*\\.[0-9]+" k deltal,
-        token_class numeral "[1-9][0-9]*" k deltal,
-        token_class hexadecimal "#x[0-9a-fA-F]*" k deltal,
-        token_class binary "#b[0-1]*" k deltal,
-        token_class string "\"(^(\"\"))*\"" deltarow deltacol,
-        token_class symbol "([~!@$%^&\\*_\\-\\+=<>\\.?/]|[a-z]|[A-Z])([~!@$%^&\\*_\\-\\+=<>\\.?/]|[a-z]|[A-Z]|[0-9])*" k deltal,
-        token_class symbol "\\|([^\\|])*\\|" deltarow deltacol
+        whitespace " +" k deltal,
+        whitespace "\t" k (deltay 4),
+        whitespace "\n" (deltax 1) (sety 0),
+        lparen "\\(" k (deltay 1),
+        rparen "\\)" k (deltay 1),
+        decimal "[1-9][0-9]*\\.[0-9]+" k deltal,
+        numeral "[1-9][0-9]*" k deltal,
+        hexadecimal "#x[0-9a-fA-F]*" k deltal,
+        binary "#b[0-1]*" k deltal,
+        string "\"(^(\"\"))*\"" deltarow deltacol,
+        symbol "([~!@$%^&\\*_\\-\\+=<>\\.?/]|[a-z]|[A-Z])([~!@$%^&\\*_\\-\\+=<>\\.?/]|[a-z]|[A-Z]|[0-9])*" k deltal,
+        symbol "\\|([^\\|])*\\|" deltarow deltacol
     }
 
-    def filter_whitespace = List::filter [(token POS T S) -> T /= whitespace]
+    def filter_whitespace = List::filter [(T POS S) -> T /= whitespace]
 
 )
 
@@ -52,17 +52,13 @@ namespace SMTLIB (
 
     def eof = [{} -> success none {} |TT -> fail TT] <!> "eof expected"
 
-    def is_token = [T0 -> look <*> [(token POS T1 S) -> if T0 == T1 then skip else fail]]
+    def is_token = [T0 -> look <*> [(T1 POS S) -> if T0 == T1 then skip else fail]]
 
     def parse_sexpr =
         (
-            (is_token decimal <@> [(token POS T S) -> decimal POS S])
-        <+> (is_token numeral <@> [(token POS T S) -> numeral POS S])
-        <+> (is_token hexadecimal <@> [(token POS T S) -> hexadecimal POS S])
-        <+> (is_token binary <@> [(token POS T S) -> binary POS S])
-        <+> (is_token string <@> [(token POS T S) -> string POS S])
-        <+> (is_token symbol <@> [(token POS T S) -> symbol POS S])
-        <+> (is_token lparen <*> [(token POS _ _) -> plus parse_sexpr <*> [SS -> is_token rparen <@> [_ -> sexpr POS SS]]])
+            (is_token decimal) <+> (is_token numeral) <+> (is_token hexadecimal)
+        <+> (is_token binary) <+> (is_token string) <+> (is_token symbol)
+        <+> (is_token lparen <*> [(_ POS _) -> plus parse_sexpr <*> [SS -> is_token rparen <@> [_ -> sexpr POS SS]]])
         ) <!> "sexpr expected"
 
     def parse_full = star parse_sexpr <*> [SS -> eof <@> [_ -> SS]]
@@ -70,6 +66,26 @@ namespace SMTLIB (
     def parse = 
         search parse_full [X _ -> X] [M TT -> throw ("parse error:" M (List::head TT))] [M TT -> throw ("parse error:" M (List::head TT))]
 )
+
+# namespace SMTLIB (
+    # using System
+# 
+# 
+    # def cutoff = 70
+# 
+    # def spaces = [N -> 
+    # def renderer =
+        # [ N (decimal _ S) -> S
+        # | N (numeral _ S) -> S
+        # | N (hexadecimal _ S) -> S
+        # | N (binary _ S) -> S
+        # | N (string _ S) -> S
+        # | N (symbol _ S) -> S
+        # | N (sexpr _ SS) ->
+# 
+    # def pretty = render 0
+# )
+
 
 using System
 
