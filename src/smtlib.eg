@@ -4,12 +4,10 @@ import "regex.ego"
 import "lexer.eg"
 
 namespace SMTLIB (
-
-    data whitespace
+    data whitespace, comment
     data numeral, decimal, hexadecimal, binary, string 
     data symbol, reserved, keyword, sexpr
     data lparen, rparen
-
 )
 
 namespace SMTLIB (
@@ -26,6 +24,7 @@ namespace SMTLIB (
         whitespace " +" k deltal,
         whitespace "\t" k (deltay 4),
         whitespace "\n" (deltax 1) (sety 0),
+        comment ";([^\\n])*" k deltal,
         lparen "\\(" k (deltay 1),
         rparen "\\)" k (deltay 1),
         decimal "[1-9][0-9]*\\.[0-9]+" k deltal,
@@ -37,7 +36,7 @@ namespace SMTLIB (
         symbol "\\|([^\\|])*\\|" deltarow deltacol
     }
 
-    def filter_whitespace = List::filter [(T POS S) -> T /= whitespace]
+    def filter_whitespace = List::filter [(whitespace _ _) -> false |(comment _ _) -> false |_ -> true]
 
 )
 
@@ -95,7 +94,7 @@ namespace SMTLIB (
 using System
 
 def main =
-    Lexer::lexify SMTLIB::lexemes "test" "(a ++ (12456 3.14) | a longer token |)\nnextline"
+    Lexer::lexify SMTLIB::lexemes "test" "(a ++ (12456 3.14) | a longer token |); foo\nnextline"
     |> SMTLIB::filter_whitespace
     |> SMTLIB::parse
     |> List::map SMTLIB::pretty
