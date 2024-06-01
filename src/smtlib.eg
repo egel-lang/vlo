@@ -74,8 +74,8 @@ namespace SMTLIB (
 using System
 
 def main =
-#    Lexer::lexify SMTLIB::lexemes "test" "(a ++) 12456 3.14 | a longer token |\nnextline"
-    Lexer::lexify SMTLIB::lexemes "test" "(a b c) d"
+    Lexer::lexify SMTLIB::lexemes "test" "(a ++) 12456 3.14 | a longer token |\nnextline"
+#    Lexer::lexify SMTLIB::lexemes "test" "(a b c) d"
     |> SMTLIB::filter_whitespace
     |> SMTLIB::parse
 
