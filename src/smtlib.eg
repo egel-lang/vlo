@@ -67,25 +67,20 @@ namespace SMTLIB (
         search parse_full [X _ -> X] [M TT -> throw ("parse error:" M (List::head TT))] [M TT -> throw ("parse error:" M (List::head TT))]
 )
 
-# namespace SMTLIB (
-    # using System
-# 
-# 
-    # def cutoff = 70
-# 
-    # def spaces = [N -> 
-    # def renderer =
-        # [ N (decimal _ S) -> S
-        # | N (numeral _ S) -> S
-        # | N (hexadecimal _ S) -> S
-        # | N (binary _ S) -> S
-        # | N (string _ S) -> S
-        # | N (symbol _ S) -> S
-        # | N (sexpr _ SS) ->
-# 
-    # def pretty = render 0
-# )
+namespace SMTLIB (
+    using System
+ 
+    def cutoff = 70
+ 
+    def spaces = [N -> List::repeat N ' ' |> pack]
 
+    # uh, either lay out horizontally or vertically, that's what I remember
+    def render =
+        [ N (sexpr _ SS) -> 0
+        | N (_ _ S) -> S ]
+
+    def pretty = render 0
+)
 
 using System
 
