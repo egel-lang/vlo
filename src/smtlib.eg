@@ -52,12 +52,12 @@ namespace SMTLIB (
 
     def eof = [{} -> success none {} |TT -> fail TT] <!> "eof expected"
 
-    def is_token = [T0 -> look <*> [(T1 POS S) -> if T0 == T1 then skip else fail]]
+    def is_token = [T0 -> look <-> [(T1 POS S) -> if T0 == T1 then skip else fail]]
 
     def parse_sexpr =
         (
             (is_token decimal) <+> (is_token numeral) <+> (is_token hexadecimal)
-        <+> (is_token binary) <+> (is_token string) <+> (is_token symbol)
+        <+> (is_token binary) <+> (is_token string) <+> (is_token symbol) <+> (is_token keyword)
         <+> (is_token lparen <*> [(_ POS _) -> plus parse_sexpr <*> [SS -> is_token rparen <@> [_ -> sexpr POS SS]]])
         ) <!> "sexpr expected"
 
