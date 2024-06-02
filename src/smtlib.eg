@@ -33,7 +33,8 @@ namespace SMTLIB (
         binary "#b[0-1]*" k deltal,
         string "\"(^(\"\"))*\"" deltarow deltacol,
         symbol "([~!@$%^&\\*_\\-\\+=<>\\.?/]|[a-z]|[A-Z])([~!@$%^&\\*_\\-\\+=<>\\.?/]|[a-z]|[A-Z]|[0-9])*" k deltal,
-        symbol "\\|([^\\|])*\\|" deltarow deltacol
+        symbol "\\|([^\\|])*\\|" deltarow deltacol,
+        keyword ":([~!@$%^&\\*_\\-\\+=<>\\.?/]|[a-z]|[A-Z])([~!@$%^&\\*_\\-\\+=<>\\.?/]|[a-z]|[A-Z]|[0-9])*" k deltal
     }
 
     def filter_whitespace = List::filter [(whitespace _ _) -> false |(comment _ _) -> false |_ -> true]
@@ -62,8 +63,12 @@ namespace SMTLIB (
 
     def parse_full = star parse_sexpr <*> [SS -> eof <@> [_ -> SS]]
 
+    def parse_error =
+        [M {} -> throw ("parse error:" + M + ":empty") 
+        |M {T|TT} -> throw ("parse error:" + M + ":" + (to_text T))]
+
     def parse = 
-        search parse_full [X _ -> X] [M TT -> throw ("parse error:" M (List::head TT))] [M TT -> throw ("parse error:" M (List::head TT))]
+        search parse_full [X _ -> X] parse_error parse_error
 )
 
 namespace SMTLIB (
@@ -94,7 +99,7 @@ namespace SMTLIB (
 using System
 
 def main =
-    Lexer::lexify SMTLIB::lexemes "test" "(a ++ (12456 3.14) | a longer token |); foo\nnextline"
+    Lexer::lexify SMTLIB::lexemes "test" "(a :blah ++ (12456 3.14) | a longer token |); foo\nnextline"
     |> SMTLIB::filter_whitespace
     |> SMTLIB::parse
     |> List::map SMTLIB::pretty
