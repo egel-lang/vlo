@@ -110,6 +110,27 @@ namespace LTL (
         search parse_ltl [X _ -> X] parse_error parse_error
 )
 
+namespace LTL (
+    using System
+
+    def to_text = 
+        [ltl_true -> "true"
+        |ltl_false -> "false"
+        |(ltl_variable S) -> S
+        |(ltl_not F) -> "~" + to_text F
+        |(ltl_and F0 F1) -> "(" + to_text F0 + " /\\ " + to_text F1 + ")"
+        |(ltl_or F0 F1) -> "(" + to_text F0 + " \\/ " + to_text F1 + ")"
+        |(ltl_implies F0 F1) -> "(" + to_text F0 + " -> " + to_text F1 + ")"
+        |(ltl_iff F0 F1) -> "(" + to_text F0 + " <-> " + to_text F1 + ")"
+        |(ltl_next F) -> "X " + to_text F
+        |(ltl_finally F) -> "F " + to_text F
+        |(ltl_globally F) -> "G " + to_text F
+        |(ltl_until F0 F1) -> "(" + to_text F0 + " U " + to_text F1 + ")"
+        |(ltl_release F0 F1) -> "(" + to_text F0 + " R " + to_text F1 + ")"
+        |(ltl_weakuntil F0 F1) -> "(" + to_text F0 + " W " + to_text F1 + ")"
+        |(ltl_mightyrelease F0 F1) -> "(" + to_text F0 + " M " + to_text F1 + ")"]
+)
+
 using System
 
 def main =
@@ -119,6 +140,7 @@ form1: b /\ (false -> c);
 """
     |> LTL::filter_whitespace
     |> LTL::parse
+    |> List::map [(N, F) -> (N, LTL::to_text F)]
 #    |> List::map LTL::pretty
 #    |> List::map [S -> print S "\n"]; none
 
