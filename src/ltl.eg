@@ -1,0 +1,120 @@
+import "prelude.eg"
+import "search.eg"
+import "regex.ego"
+import "lexer.eg"
+
+namespace LTL (
+    data whitespace, comment, lparen, rparen
+    data ltl_variable
+    data ltl_true, ltl_false, ltl_not, ltl_and, ltl_or, ltl_implies, ltl_iff
+    data ltl_next, ltl_until, ltl_globally, ltl_finally, ltl_release, ltl_weakuntil, ltl_mightyrelease
+)
+
+namespace LTL (
+    using System
+    using Position
+    using Lexer
+
+    val break = Regex::compile "\n"
+    def deltarow = [POS S -> deltax (Regex::split break S |> List::length) POS S]
+    def deltacol = [POS S -> deltay (Regex::split break S |> List::last |> String::length) POS S]
+
+    def lexemes =
+    {
+        whitespace " +" k deltal,
+        whitespace "\t" k (deltay 4),
+        whitespace "\n" (deltax 1) (sety 0),
+        comment "#([^\\n])*" k deltal,
+
+        lparen "\\(" k (deltay 1),
+        rparen "\\)" k (deltay 1),
+
+        ltl_true "true" k (deltay 4),
+        ltl_false "false" k (deltay 5),
+        ltl_not "~" k (deltay 1),
+        ltl_and "/\\\\" k (deltay 2),
+        ltl_or "\\\\/" k (deltay 2),
+        ltl_implies "->" k (deltay 2),
+        ltl_iff "<->" k (deltay 3),
+        
+        ltl_next "X" k (deltay 1),
+        ltl_until "U" k (deltay 1),
+        ltl_globally "G" k (deltay 1),
+        ltl_finally "F" k (deltay 1),
+        ltl_release "R" k (deltay 1),
+        ltl_weakuntil "W" k (deltay 1),
+        ltl_mightyrelease "M" k (deltay 1),
+        
+        ltl_variable "[a-zA-Z][a-zA-Z0-9]*" k deltal
+    }
+
+    def filter_whitespace = List::filter [(whitespace _ _) -> false |(comment _ _) -> false |_ -> true]
+
+)
+
+namespace LTL (
+    using System
+    using Search
+    using Lexer
+
+    def look = [{} -> fail {} |{T|TT} -> success T {T|TT}]
+
+    def skip = [{} -> fail {} |{T|TT} -> success T TT]
+
+    def eof = [{} -> success none {} |TT -> fail TT] <!> "eof expected"
+
+    def is_variable = look <-> [(ltl_variable POS S) -> skip <@> [_ -> ltl_variable S]| _ -> fail]
+
+    def is_token = [T0 -> look <-> [(T1 POS S) -> if T0 == T1 then skip <@> [_ -> T0] else fail]]
+
+    def parse_primitive = 
+        ( (is_variable) <+> (is_token ltl_true) <+> (is_token ltl_false) <+>
+          (is_token lparen <*> [_ -> parse_ltl <*> [F -> is_token rparen <@> [_ -> F]]])
+        ) <!> "primitive expected"
+
+    def parse_unary_modality =
+        (is_token ltl_next) <+> (is_token ltl_finally) <+> (is_token ltl_globally)
+
+    def parse_binary_modality =
+        (is_token ltl_until) <+> (is_token ltl_release) <+> (is_token ltl_weakuntil) <+> (is_token ltl_mightyrelease)
+
+    def parse_modal =
+        ( (parse_unary_modality <*> [M -> parse_modal <@> [F -> M F]]) <+>
+          (parse_primitive </> [F0 -> parse_binary_modality <*> [M -> parse_primitive <@> [F1 -> M F0 F1]]]) ) 
+        <!> "modality expected"
+
+    def parse_not =
+        ((is_token ltl_not) <*> [OP -> parse_not <@> [F -> OP F]]) <+> parse_modal
+
+    def parse_implies =
+        parse_not </> [F0 -> ((is_token ltl_implies) <+> (is_token ltl_iff)) <*> [OP -> parse_not <@> [F1 -> OP F0 F1]]]
+
+    def parse_and =
+        parse_implies </> [F0 -> (is_token ltl_and) <*> [OP -> parse_and <@> [F1 -> OP F0 F1]]]
+
+    def parse_or =
+        parse_and </> [F0 -> (is_token ltl_or) <*> [OP -> parse_or <@> [F1 -> OP F0 F1]]]
+
+    def parse_ltl = parse_or
+
+    def parse_full = star parse_ltl <*> [SS -> eof <@> [_ -> SS]]
+
+    def parse_error =
+        [M {} -> throw ("parse error:" + M + ":empty") 
+        |M {T|TT} -> throw ("parse error:" + M + ":" + (to_text T))]
+
+    def parse = 
+        search parse_full [X _ -> X] parse_error parse_error
+)
+
+using System
+
+def main =
+    Lexer::lexify LTL::lexemes "test" """
+GX foo /\\ false
+"""
+    |> LTL::filter_whitespace
+    |> LTL::parse
+#    |> List::map LTL::pretty
+#    |> List::map [S -> print S "\n"]; none
+
