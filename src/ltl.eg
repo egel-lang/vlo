@@ -4,7 +4,8 @@ import "regex.ego"
 import "lexer.eg"
 
 namespace LTL (
-    data whitespace, comment, lparen, rparen
+    data whitespace, comment
+    data lparen, rparen, colon, semicolon
     data ltl_variable
     data ltl_true, ltl_false, ltl_not, ltl_and, ltl_or, ltl_implies, ltl_iff
     data ltl_next, ltl_until, ltl_globally, ltl_finally, ltl_release, ltl_weakuntil, ltl_mightyrelease
@@ -28,6 +29,8 @@ namespace LTL (
 
         lparen "\\(" k (deltay 1),
         rparen "\\)" k (deltay 1),
+        colon ":" k (deltay 1),
+        semicolon ";" k (deltay 1),
 
         ltl_true "true" k (deltay 4),
         ltl_false "false" k (deltay 5),
@@ -69,7 +72,7 @@ namespace LTL (
 
     def parse_primitive = 
         ( (is_variable) <+> (is_token ltl_true) <+> (is_token ltl_false) <+>
-          (is_token lparen <*> [_ -> parse_ltl <*> [F -> is_token rparen <@> [_ -> F]]])
+          (is_token lparen <*> [_ -> parse_or <*> [F -> is_token rparen <@> [_ -> F]]])
         ) <!> "primitive expected"
 
     def parse_unary_modality =
@@ -95,23 +98,24 @@ namespace LTL (
     def parse_or =
         parse_and </> [F0 -> (is_token ltl_or) <*> [OP -> parse_or <@> [F1 -> OP F0 F1]]]
 
-    def parse_ltl = parse_or
+    def parse_formula = is_variable  <*> [(ltl_variable N) -> (is_token colon) <*> [_ -> parse_or <*> [F -> is_token semicolon <@> [_ -> (N, F)]]]]
 
-    def parse_full = star parse_ltl <*> [SS -> eof <@> [_ -> SS]]
+    def parse_ltl = star parse_formula <*> [SS -> eof <@> [_ -> SS]]
 
     def parse_error =
         [M {} -> throw ("parse error:" + M + ":empty") 
         |M {T|TT} -> throw ("parse error:" + M + ":" + (to_text T))]
 
     def parse = 
-        search parse_full [X _ -> X] parse_error parse_error
+        search parse_ltl [X _ -> X] parse_error parse_error
 )
 
 using System
 
 def main =
     Lexer::lexify LTL::lexemes "test" """
-GX foo /\ false
+form0: GX foo;
+form1: b /\ (false -> c);
 """
     |> LTL::filter_whitespace
     |> LTL::parse
