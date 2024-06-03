@@ -111,7 +111,7 @@ using System
 
 def main =
     Lexer::lexify LTL::lexemes "test" """
-GX foo /\\ false
+GX foo /\ false
 """
     |> LTL::filter_whitespace
     |> LTL::parse
