@@ -107,7 +107,7 @@ namespace LTL (
         |M {T|TT} -> throw ("parse error:" + M + ":" + (to_text T))]
 
     def parse = 
-        search parse_ltl [X _ -> X] parse_error parse_error
+        search parse_ltl k parse_error parse_error
 )
 
 namespace LTL (
