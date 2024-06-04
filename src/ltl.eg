@@ -131,6 +131,27 @@ namespace LTL (
         |(ltl_mightyrelease F0 F1) -> "(" + to_text F0 + " M " + to_text F1 + ")"]
 )
 
+namespace LTL (
+    using System
+
+    def simplify = 
+        [ltl_true -> ltl_true
+        |ltl_false -> ltl_false
+        |(ltl_variable S) -> ltl_variable S
+        |(ltl_not F) -> ltl_not (simplify F)
+        |(ltl_and F0 F1) -> ltl_and (simplify F0) (simplify F1)
+        |(ltl_or F0 F1) -> ltl_or (simplify F0) (simplify F1)
+        |(ltl_implies F0 F1) -> ltl_or (ltl_not (simplify F0)) (simplify F1) #eliminate
+        |(ltl_iff F0 F1) -> simplify (ltl_and (ltl_implies F0 F1) (ltl_implies F1 F0)) #eliminate
+        |(ltl_next F) -> ltl_next (simplify F)
+        |(ltl_finally F) -> ltl_until ltl_true (simplify F) #eliminate
+        |(ltl_globally F) -> simplify (ltl_release ltl_false F) #eliminate
+        |(ltl_until F0 F1) -> (ltl_until (simplify F0) (simplify F1))
+        |(ltl_release F0 F1) -> (ltl_release (simplify F0) (simplify F1))
+        |(ltl_weakuntil F0 F1) -> simplify (ltl_release F1 (ltl_or F1 F0)) #eliminate
+        |(ltl_mightyrelease F0 F1) -> simplify (ltl_until F1 (ltl_and F0 F1))] #eliminiate
+)
+
 using System
 
 def main =
@@ -140,6 +161,7 @@ form1: b /\ (false -> c);
 """
     |> LTL::filter_whitespace
     |> LTL::parse
+    |> List::map [(N, F) -> (N, LTL::simplify F)]
     |> List::map [(N, F) -> (N, LTL::to_text F)]
 #    |> List::map LTL::pretty
 #    |> List::map [S -> print S "\n"]; none
