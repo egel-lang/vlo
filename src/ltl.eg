@@ -152,16 +152,37 @@ namespace LTL (
         |(ltl_mightyrelease F0 F1) -> simplify (ltl_until F1 (ltl_and F0 F1))] #eliminiate
 )
 
+namespace LTL (
+    using System
+
+    def to_nnf = 
+        [ltl_true -> ltl_true
+        |ltl_false -> ltl_false
+        |(ltl_variable S) -> ltl_variable S
+        |(ltl_and F0 F1) -> ltl_and (to_nnf F0) (to_nnf F1)
+        |(ltl_or F0 F1) -> ltl_or (to_nnf F0) (to_nnf F1)
+        |(ltl_next F) -> ltl_next (to_nnf F)
+        |(ltl_until F0 F1) -> ltl_until (to_nnf F0) (to_nnf F1)
+        |(ltl_release F0 F1) -> ltl_release (to_nnf F0) (to_nnf F1)
+        |(ltl_not (ltl_and F0 F1)) -> ltl_or (to_nnf (ltl_not F0)) (to_nnf (ltl_not F1))
+        |(ltl_not (ltl_or F0 F1)) -> ltl_and (to_nnf (ltl_not F0)) (to_nnf (ltl_not F1))
+        |(ltl_not (ltl_next F)) -> ltl_next (to_nnf (ltl_not F))
+        |(ltl_not (ltl_until F0 F1)) -> ltl_release (to_nnf (ltl_not F0)) (to_nnf (ltl_not F1))
+        |(ltl_not (ltl_release F0 F1)) -> ltl_until (to_nnf (ltl_not F0)) (to_nnf (ltl_not F1))
+        |(ltl_not F) -> ltl_not (to_nnf F)]
+)
+
 using System
 
 def main =
     Lexer::lexify LTL::lexemes "test" """
 form0: GX foo;
-form1: b /\ (false -> c);
+form1: ~(b /\ (false -> c));
 """
     |> LTL::filter_whitespace
     |> LTL::parse
     |> List::map [(N, F) -> (N, LTL::simplify F)]
+    |> List::map [(N, F) -> (N, LTL::to_nnf F)]
     |> List::map [(N, F) -> (N, LTL::to_text F)]
 #    |> List::map LTL::pretty
 #    |> List::map [S -> print S "\n"]; none
