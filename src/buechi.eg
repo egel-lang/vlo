@@ -1,0 +1,84 @@
+import "prelude.eg"
+import "dict.eg"
+import "ltl.eg"
+
+# LTL formula to graph. 
+# 
+# Taken from: https://en.wikipedia.org/wiki/Linear_temporal_logic_to_B%C3%BCchi_automaton
+# 
+# typedefs
+#      LTL: LTL formulas
+#      LTLSet: Sets of LTL formulas
+#      NodeSet: Sets of graph nodes ∪ {init}
+#   
+#      globals
+#          Nodes : set of graph nodes  := ∅
+#          Incoming: Nodes → NodeSet := ∅
+#          Now    : Nodes → LTLSet := ∅
+#          Next   : Nodes → LTLSet := ∅
+#   
+#       function create_graph(LTL f) {
+#           expand({f}, ∅, ∅, {init})
+#           return (Nodes, Now, Incoming)
+#       }
+# 
+# function expand(LTLSet curr, LTLSet old, LTLSet next, NodeSet incoming){
+#  if curr = ∅ then
+#     if ∃q ∈ Nodes: Next(q)=next ∧ Now(q)=old then
+#        Incoming(q)  := Incoming(q) ∪ incoming
+#     else
+#        q  := new_node()
+#        Nodes := Nodes ∪ {q}
+#        Incoming(q)  := incoming
+#        Now(q)  := old
+#        Next(q)  := next
+#        expand(Next(q), ∅, ∅, {q})
+#  else
+#     f ∈ curr
+#     curr  := curr\{f}
+#     old  := old ∪ {f}
+#     match f with
+#      | true, false, p, or ¬p, where  p ∈ AP  →
+#        if f = false ∨ neg(f) ∈ old then
+#           skip
+#        else
+#           expand(curr, old, next, incoming)
+#      | f1 ∧ f2 →
+#        expand(curr ∪ ({f1,f2}\old), old, next, incoming)
+#      | X g →
+#        expand(curr, old, next ∪ {g}, incoming)       
+#      | f1 ∨ f2, f1 U f2, or f1 R f2 →
+#        expand(curr ∪ (curr1(f)\old), old, next ∪ next1(f), incoming)
+#        expand(curr ∪ (curr2(f)\old), old, next, incoming)
+#  return
+# }
+
+namespace Buechi (
+    using LTL
+
+    def find =
+        [P {} -> none |P {X|XX} -> if P X then X else find P XX]
+
+    def get = [D N -> if Dict::has D N then Dict::get D N else none]
+
+    def set = Dict::set
+
+    def nodes_expand =
+
+    def expand =
+        [{} O N I (NODES, IN, NOW, NEXT) ->
+            [none ->
+                let (Q, NODES) = [NN -> let N = List::length NN in (N,{N|NN})] NODES in
+                let IN = set IN Q IN in
+                let NOW = set NOW Q O in
+                let NEXT = set NEXT Q N in
+                expand (get NEXT Q) {} {} {Q} (NODES, IN, NOW, NEXT)
+            |Q ->
+                let IN = set IN Q (List::union (get IN Q) I) in
+                (NODES, IN, NOW, NEXT)
+            ]
+            (find [Q -> and (get NEXT Q == N) (get NOW Q == O)] NODES)
+        [{F|CURR} O N I (NODES, IN, NOW, NEXT) ->
+            
+)
+
