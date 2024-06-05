@@ -63,8 +63,6 @@ namespace Buechi (
 
     def set = Dict::set
 
-    def nodes_expand =
-
     def expand =
         [{} O N I (NODES, IN, NOW, NEXT) ->
             [none ->
@@ -79,6 +77,26 @@ namespace Buechi (
             ]
             (find [Q -> and (get NEXT Q == N) (get NOW Q == O)] NODES)
         [{F|CURR} O N I (NODES, IN, NOW, NEXT) ->
+            let O = {F|O} in
+            [ ltl_false ->
+                (NODES, IN, NOW, NEXT)
+            | ltl_true -> 
+                if List::member O ltl_false then (NODES, IN, NOW, NEXT)
+                else expand CURR O N I (NODES, IN, NOW, NEXT)
+            | (ltl_variable S) ->
+                if List::member O (ltl_not (ltl_variable S)) then (NODES, IN, NOW, NEXT)
+                else expand CURR O N I (NODES, IN, NOW, NEXT)
+            | (ltl_not (ltl_variable S)) ->
+                if List::member O (ltl_variable S) then (NODES, IN, NOW, NEXT)
+                else expand CURR O N I (NODES, IN, NOW, NEXT)
+            | (ltl_and F0 F1) ->
+                let CURR = List::union CURR (List::difference {F0,F1} O) in
+                expand CURR O N I (NODES, IN, NOW, NEXT)
+            | (ltl_next F) ->
+                let N = List::union {F} N in
+                expand CURR O N I (NODES, IN, NOW, NEXT)
+            | (ltl_or F0 F1) ->
+                let CURR = List::union CURR (
             
 )
 
