@@ -5,7 +5,31 @@ import "ltl.eg"
 # LTL formula to graph. 
 # 
 # Taken from: https://en.wikipedia.org/wiki/Linear_temporal_logic_to_B%C3%BCchi_automaton
-# 
+#
+# |f       |curr1(f)| next1(f)    | curr2(f)
+# |f1 U f2 | {f1}   | { f1 U f2 } | {f2}
+# |f1 R f2 | {f2}   | { f1 R f2 } | {f1,f2}
+# |f1 ∨ f2 | {f2}   | ∅           | {f1}
+
+namespace Buechi (
+    using LTL
+
+    def curr1 =
+        [(ltl_until F0 F1) -> {F0}
+        |(ltl_release F0 F1) -> {F1}
+        |(ltl_or F0 F1) -> {F1}]
+
+    def next1 =
+        [(ltl_until F0 F1) -> {ltl_until F0 F1}
+        |(ltl_release F0 F1) -> {ltl_release F0 F1}
+        |(ltl_or F0 F1) -> {}]
+
+    def curr2 =
+        [(ltl_until F0 F1) -> {F1}
+        |(ltl_release F0 F1) -> {F0, F1}
+        |(ltl_or F0 F1) -> {F1}]
+)
+
 # typedefs
 #      LTL: LTL formulas
 #      LTLSet: Sets of LTL formulas
