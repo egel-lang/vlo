@@ -1,5 +1,4 @@
 import "prelude.eg"
-import "dict.eg"
 import "ltl.eg"
 
 # LTL formula to graph. 
@@ -78,6 +77,7 @@ namespace Buechi (
 # }
 
 namespace Buechi (
+    using System
     using LTL
 
     def find =
@@ -105,13 +105,13 @@ namespace Buechi (
             [ ltl_false ->
                 (NODES, IN, NOW, NEXT)
             | ltl_true -> 
-                if List::member O ltl_false then (NODES, IN, NOW, NEXT)
+                if List::elem O ltl_false then (NODES, IN, NOW, NEXT)
                 else expand CURR O N I (NODES, IN, NOW, NEXT)
             | (ltl_variable S) ->
-                if List::member O (ltl_not (ltl_variable S)) then (NODES, IN, NOW, NEXT)
+                if List::elem O (ltl_not (ltl_variable S)) then (NODES, IN, NOW, NEXT)
                 else expand CURR O N I (NODES, IN, NOW, NEXT)
             | (ltl_not (ltl_variable S)) ->
-                if List::member O (ltl_variable S) then (NODES, IN, NOW, NEXT)
+                if List::elem O (ltl_variable S) then (NODES, IN, NOW, NEXT)
                 else expand CURR O N I (NODES, IN, NOW, NEXT)
             | (ltl_and F0 F1) ->
                 let CURR = List::union CURR (List::difference {F0,F1} O) in
