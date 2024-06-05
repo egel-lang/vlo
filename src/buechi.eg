@@ -26,7 +26,7 @@ namespace Buechi (
     def curr2 =
         [(ltl_until F0 F1) -> {F1}
         |(ltl_release F0 F1) -> {F0, F1}
-        |(ltl_or F0 F1) -> {F1}]
+        |(ltl_or F0 F1) -> {F0}]
 )
 
 # typedefs
