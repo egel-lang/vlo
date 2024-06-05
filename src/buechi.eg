@@ -91,7 +91,7 @@ namespace Buechi (
         [{} O N I (NODES, IN, NOW, NEXT) ->
             [none ->
                 let (Q, NODES) = [NN -> let N = List::length NN in (N,{N|NN})] NODES in
-                let IN = set IN Q IN in
+                let IN = set IN Q I in
                 let NOW = set NOW Q O in
                 let NEXT = set NEXT Q N in
                 expand (get NEXT Q) {} {} {Q} (NODES, IN, NOW, NEXT)
@@ -100,34 +100,34 @@ namespace Buechi (
                 (NODES, IN, NOW, NEXT)
             ]
             (find [Q -> and (get NEXT Q == N) (get NOW Q == O)] NODES)
-        |{F|CURR} O N I (NODES, IN, NOW, NEXT) ->
+        |{F|FF} O N I (NODES, IN, NOW, NEXT) ->
             let O = {F|O} in
             [ ltl_false ->
                 (NODES, IN, NOW, NEXT)
             | ltl_true -> 
                 if List::elem O ltl_false then (NODES, IN, NOW, NEXT)
-                else expand CURR O N I (NODES, IN, NOW, NEXT)
+                else expand FF O N I (NODES, IN, NOW, NEXT)
             | (ltl_variable S) ->
                 if List::elem O (ltl_not (ltl_variable S)) then (NODES, IN, NOW, NEXT)
-                else expand CURR O N I (NODES, IN, NOW, NEXT)
+                else expand FF O N I (NODES, IN, NOW, NEXT)
             | (ltl_not (ltl_variable S)) ->
                 if List::elem O (ltl_variable S) then (NODES, IN, NOW, NEXT)
-                else expand CURR O N I (NODES, IN, NOW, NEXT)
+                else expand FF O N I (NODES, IN, NOW, NEXT)
             | (ltl_and F0 F1) ->
-                let CURR = List::union CURR (List::difference {F0,F1} O) in
-                expand CURR O N I (NODES, IN, NOW, NEXT)
+                let FF = List::union FF (List::difference {F0,F1} O) in
+                expand FF O N I (NODES, IN, NOW, NEXT)
             | (ltl_next F) ->
                 let N = List::union {F} N in
-                expand CURR O N I (NODES, IN, NOW, NEXT)
+                expand FF O N I (NODES, IN, NOW, NEXT)
             | (ltl_or F0 F1) -> 
-                    expand (List::union CURR (List::difference (curr2 F) O)) O N I
-                    (expand (List::union CURR (List::difference (curr1 F) O)) O (List::union N (next1 F)) I (NODES, IN, NOW, NEXT))
+                    expand (List::union FF (List::difference (curr2 F) O)) O N I
+                    (expand (List::union FF (List::difference (curr1 F) O)) O (List::union N (next1 F)) I (NODES, IN, NOW, NEXT))
             | (ltl_until F0 F1) -> 
-                    expand (List::union CURR (List::difference (curr2 F) O)) O N I
-                    (expand (List::union CURR (List::difference (curr1 F) O)) O (List::union N (next1 F)) I (NODES, IN, NOW, NEXT))
+                    expand (List::union FF (List::difference (curr2 F) O)) O N I
+                    (expand (List::union FF (List::difference (curr1 F) O)) O (List::union N (next1 F)) I (NODES, IN, NOW, NEXT))
             | (ltl_release F0 F1) -> 
-                    expand (List::union CURR (List::difference (curr2 F) O)) O N I
-                    (expand (List::union CURR (List::difference (curr1 F) O)) O (List::union N (next1 F)) I (NODES, IN, NOW, NEXT))] F ]
+                    expand (List::union FF (List::difference (curr2 F) O)) O N I
+                    (expand (List::union FF (List::difference (curr1 F) O)) O (List::union N (next1 F)) I (NODES, IN, NOW, NEXT))] F ]
 
 )
 
