@@ -4,7 +4,7 @@ import "ltl.eg"
 # LTL formula to graph. 
 # 
 # Taken from: https://en.wikipedia.org/wiki/Linear_temporal_logic_to_B%C3%BCchi_automaton
-#
+
 # |f       |curr1(f)| next1(f)    | curr2(f)
 # |f1 U f2 | {f1}   | { f1 U f2 } | {f2}
 # |f1 R f2 | {f2}   | { f1 R f2 } | {f1,f2}
@@ -80,12 +80,14 @@ namespace Buechi (
     using System
     using LTL
 
-    def find =
-        [P {} -> none |P {X|XX} -> if P X then X else find P XX]
+    def empty = Dict::dict
 
     def get = [D N -> if Dict::has D N then Dict::get D N else none]
 
     def set = Dict::set
+
+    def find =
+        [P {} -> none |P {X|XX} -> if P X then X else find P XX]
 
     def expand =
         [{} O N I (NODES, IN, NOW, NEXT) ->
@@ -129,5 +131,9 @@ namespace Buechi (
                     expand (List::union FF (List::difference (curr2 F) O)) O N I
                     (expand (List::union FF (List::difference (curr1 F) O)) O (List::union N (next1 F)) I (NODES, IN, NOW, NEXT))] F ]
 
-)
+    def to_graph =
+        [ F ->
+            let (NODES, IN, NOW, NEXT) = expand {F} {} {} {0} ({}, empty, empty, empty) in 
+                (NODES, NOW, IN) ]
 
+)
