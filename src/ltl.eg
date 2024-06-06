@@ -1,6 +1,7 @@
 import "prelude.eg"
 import "search.eg"
 import "regex.ego"
+import "dictionary.eg"
 import "lexer.eg"
 
 namespace LTL (
@@ -132,8 +133,6 @@ namespace LTL (
 )
 
 namespace LTL (
-    using System
-
     def simplify = 
         [ltl_true -> ltl_true
         |ltl_false -> ltl_false
@@ -153,8 +152,6 @@ namespace LTL (
 )
 
 namespace LTL (
-    using System
-
     def to_nnf = 
         [ltl_true -> ltl_true
         |ltl_false -> ltl_false
@@ -173,5 +170,17 @@ namespace LTL (
         |(ltl_not (ltl_until F0 F1)) -> ltl_release (to_nnf (ltl_not F0)) (to_nnf (ltl_not F1))
         |(ltl_not (ltl_release F0 F1)) -> ltl_until (to_nnf (ltl_not F0)) (to_nnf (ltl_not F1))
         |(ltl_not F) -> ltl_not (to_nnf F)]
+)
+
+namespace LTL (
+    using System
+
+    def ap0 =
+        [ D (ltl_variable S) -> Dict::set D S S
+        | D (OP F) -> ap0 D F
+        | D (OP F0 F1) -> ap0 (ap0 D F0) F1
+        | D _ -> D]
+
+    def ap = do ap0 Dict::dict |> Dict::to_list |> List::map fst
 )
 

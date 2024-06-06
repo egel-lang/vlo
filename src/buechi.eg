@@ -141,9 +141,31 @@ namespace Buechi (
     def to_graph =
         [ F ->
             let (NODES, IN, NOW, NEXT) = expand {F} {} {} {0} ({}, empty, empty, empty) in 
-                (NODES, NOW, IN) ]
+                (F, NODES, NOW, IN) ]
 
 )
+
+# Let (Nodes, Now, Incoming) = create_graph(f). An equivalent LGBA to f is A=(Nodes, 2AP, L, Δ, Q0, F), where
+# 
+# L = { (q,a) | q ∈ Nodes and (Now(q) ∩ AP) ⊆ a ⊆ {p ∈ AP | ¬p ∉ Now(q) } }
+# Δ = {(q,q')| q,q' ∈ Nodes and q ∈ Incoming(q') }
+# Q0 = { q ∈ Nodes | init ∈ Incoming(q) }
+# For each sub-formula g = g1 U g2, let Fg = { q ∈ Nodes | g2 ∈ Now(q) or g ∉ Now(q) }, then F = { Fg | g ∈ cl( f ) }
+
+namespace Buechi (
+    using System
+
+    def to_lgba =
+        [(F, NODES, NOW, IN) ->
+            print "lgba:\n";
+            print "form: " (LTL::to_text F) "\n";
+            print "ap: " (LTL::ap F) "\n";
+            print "nodes: " NODES "\n";
+            print "now: " (Dict::to_list NOW) "\n";
+            print "incoming " (Dict::to_list IN) "\n";
+            none ]
+)
+
 
 using System
 
@@ -158,6 +180,7 @@ form1: ~(b /\ (false -> c));
     |> List::map LTL::simplify
     |> List::map LTL::to_nnf
     |> List::map Buechi::to_graph
+    |> List::map Buechi::to_lgba
 #    |> List::map LTL::pretty
 #    |> List::map [S -> print S "\n"]; none
 
