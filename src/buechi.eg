@@ -1,5 +1,6 @@
 import "prelude.eg"
 import "ltl.eg"
+import "dictionary.eg"
 
 # LTL formula to graph. 
 # 
@@ -91,6 +92,9 @@ namespace Buechi (
 
     def expand =
         [{} O N I (NODES, IN, NOW, NEXT) ->
+            print "expand:\n";
+            print (List::map LTL::to_text {}) "\n" (List::map LTL::to_text O) "\n" (List::map LTL::to_text N) "\n" (List::map LTL::to_text I) "\n";
+            print (NODES) "\n" (Dict::to_list IN) "\n" (Dict::to_list NOW) "\n" (Dict::to_list NEXT) "\n";
             [none ->
                 let (Q, NODES) = [NN -> let N = List::length NN in (N,{N|NN})] NODES in
                 let IN = set IN Q I in
@@ -103,17 +107,20 @@ namespace Buechi (
             ]
             (find [Q -> and (get NEXT Q == N) (get NOW Q == O)] NODES)
         |{F|FF} O N I (NODES, IN, NOW, NEXT) ->
+            print "expand:\n";
+            print (List::map LTL::to_text {F|FF}) "\n" (List::map LTL::to_text O) "\n" (List::map LTL::to_text N) "\n" (List::map LTL::to_text I) "\n";
+            print (NODES) "\n" (Dict::to_list IN) "\n" (Dict::to_list NOW) "\n" (Dict::to_list NEXT) "\n";
             let O = {F|O} in
             [ ltl_false ->
                 (NODES, IN, NOW, NEXT)
             | ltl_true -> 
-                if List::elem O ltl_false then (NODES, IN, NOW, NEXT)
+                if List::elem ltl_false O then (NODES, IN, NOW, NEXT)
                 else expand FF O N I (NODES, IN, NOW, NEXT)
             | (ltl_variable S) ->
-                if List::elem O (ltl_not (ltl_variable S)) then (NODES, IN, NOW, NEXT)
+                if List::elem (ltl_not (ltl_variable S)) O then (NODES, IN, NOW, NEXT)
                 else expand FF O N I (NODES, IN, NOW, NEXT)
             | (ltl_not (ltl_variable S)) ->
-                if List::elem O (ltl_variable S) then (NODES, IN, NOW, NEXT)
+                if List::elem (ltl_variable S) O then (NODES, IN, NOW, NEXT)
                 else expand FF O N I (NODES, IN, NOW, NEXT)
             | (ltl_and F0 F1) ->
                 let FF = List::union FF (List::difference {F0,F1} O) in
@@ -137,3 +144,20 @@ namespace Buechi (
                 (NODES, NOW, IN) ]
 
 )
+
+using System
+
+def main =
+    Lexer::lexify LTL::lexemes "test" """
+form0: GX foo;
+form1: ~(b /\ (false -> c));
+"""
+    |> LTL::filter_whitespace
+    |> LTL::parse
+    |> List::map snd 
+    |> List::map LTL::simplify
+    |> List::map LTL::to_nnf
+    |> List::map Buechi::to_graph
+#    |> List::map LTL::pretty
+#    |> List::map [S -> print S "\n"]; none
+
