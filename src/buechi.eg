@@ -6,7 +6,7 @@ import "dictionary.eg"
 # 
 # Taken from: https://en.wikipedia.org/wiki/Linear_temporal_logic_to_B%C3%BCchi_automaton
 
-# cf(f) is the set of ltl formula of f closed under neg
+# cl(f) is the set of ltl subformulae of f closed under neg
 
 namespace Buechi (
     using LTL
@@ -29,7 +29,7 @@ namespace Buechi (
         | (ltl_until F0 F1) -> positive F0 ++ positive F1 ++ {ltl_until F0 F1}
         | (ltl_release F0 F1) -> positive F0 ++ positive F1 ++ {ltl_release F0 F1} ]
 
-    def cf = do positive |> ((++) {ltl_true}) |> [FF -> FF ++ List::map neg FF] |> List::unique
+    def cl = do positive |> ((++) {ltl_true}) |> [FF -> FF ++ List::map neg FF] |> List::unique
 )
 
 
@@ -198,12 +198,16 @@ namespace Buechi (
     def to_q0 =
         [NODES IN -> List::filter [Q -> List::elem 0 (get IN Q)] NODES]
 
+    def to_final =
+        [F NODES NOW -> List::map [(ltl_until F0 F1) -> List::filter [Q -> or (List::elem F1 (get NOW Q)) (not (List::elem (ltl_until F0 F1) (get NOW Q)))] NODES] 
+                                  (List::filter [(ltl_until _ _) -> true|_ -> false] (cl F)) ]
+
     def to_lgba =
         [(F, NODES, NOW, IN) ->
             print "lgba:\n";
             print "form: " (LTL::to_text F) "\n";
             print "ap: " (LTL::ap F) "\n";
-            print "cf: " (cf F) "\n";
+            print "cl: " (cl F) "\n";
             print "nodes: " NODES "\n";
             print "now: " (Dict::to_list NOW) "\n";
             print "incoming " (Dict::to_list IN) "\n";
@@ -213,6 +217,8 @@ namespace Buechi (
             print "Delta: " DELTA "\n";
             let Q0 = to_q0 NODES IN in
             print "Q0: " Q0 "\n";
+            let FINAL = to_final F NODES NOW in
+            print "F: " FINAL "\n";
             none ]
 )
 
