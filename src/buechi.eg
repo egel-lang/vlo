@@ -93,8 +93,9 @@ namespace Buechi (
     def expand =
         [{} O N I (NODES, IN, NOW, NEXT) ->
             print "expand:\n";
-            print (List::map LTL::to_text {}) "\n" (List::map LTL::to_text O) "\n" (List::map LTL::to_text N) "\n" (List::map LTL::to_text I) "\n";
-            print (NODES) "\n" (Dict::to_list IN) "\n" (Dict::to_list NOW) "\n" (Dict::to_list NEXT) "\n";
+            print "curr: " (List::map LTL::to_text {}) "\nout: " (List::map LTL::to_text O) "\nnext: " (List::map LTL::to_text N) "\nin: " I "\n";
+            let P = do Dict::to_list |> List::map [(A, B) -> (A, List::map LTL::to_text B)] in
+            print "Nodes: " (NODES) "\nIncoming: " (Dict::to_list IN) "\nNow: " (P NOW) "\nNext: " (P NEXT) "\n";
             [none ->
                 let (Q, NODES) = [NN -> let N = List::length NN in (N,{N|NN})] NODES in
                 let IN = set IN Q I in
@@ -108,8 +109,9 @@ namespace Buechi (
             (find [Q -> and (get NEXT Q == N) (get NOW Q == O)] NODES)
         |{F|FF} O N I (NODES, IN, NOW, NEXT) ->
             print "expand:\n";
-            print (List::map LTL::to_text {F|FF}) "\n" (List::map LTL::to_text O) "\n" (List::map LTL::to_text N) "\n" (List::map LTL::to_text I) "\n";
-            print (NODES) "\n" (Dict::to_list IN) "\n" (Dict::to_list NOW) "\n" (Dict::to_list NEXT) "\n";
+            print "curr: " (List::map LTL::to_text {F|FF}) "\nout: " (List::map LTL::to_text O) "\nnext: " (List::map LTL::to_text N) "\nin: " I "\n";
+            let P = do Dict::to_list |> List::map [(A, B) -> (A, List::map LTL::to_text B)] in
+            print "Nodes: " (NODES) "\nIncoming: " (Dict::to_list IN) "\nNow: " (P NOW) "\nNext: " (P NEXT) "\n";
             let O = {F|O} in
             [ ltl_false ->
                 (NODES, IN, NOW, NEXT)
@@ -171,8 +173,8 @@ using System
 
 def main =
     Lexer::lexify LTL::lexemes "test" """
-form0: GX foo;
-form1: ~(b /\ (false -> c));
+form0: G foo;
+#form1: ~(b /\ (false -> c));
 """
     |> LTL::filter_whitespace
     |> LTL::parse
