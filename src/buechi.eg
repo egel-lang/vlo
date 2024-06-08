@@ -6,6 +6,33 @@ import "dictionary.eg"
 # 
 # Taken from: https://en.wikipedia.org/wiki/Linear_temporal_logic_to_B%C3%BCchi_automaton
 
+# cf(f) is the set of ltl formula of f closed under neg
+
+namespace Buechi (
+    using LTL
+    using System
+    using List
+
+    def neg =
+        [ ltl_false -> ltl_true
+        | ltl_true -> ltl_false
+        | F -> ltl_not F]
+
+    def positive =
+        [ ltl_false -> {}
+        | ltl_true -> {}
+        | (ltl_variable S) -> {ltl_variable S}
+        | (ltl_not F) -> positive F
+        | (ltl_or F0 F1) -> positive F0 ++ positive F1 ++ {ltl_or F0 F1}
+        | (ltl_and F0 F1) -> positive F0 ++ positive F1 ++ {ltl_and F0 F1}
+        | (ltl_next F) -> positive F ++ {ltl_next F}
+        | (ltl_until F0 F1) -> positive F0 ++ positive F1 ++ {ltl_until F0 F1}
+        | (ltl_release F0 F1) -> positive F0 ++ positive F1 ++ {ltl_release F0 F1} ]
+
+    def cf = do positive |> ((++) {ltl_true}) |> [FF -> FF ++ List::map neg FF] |> List::unique
+)
+
+
 # |f       |curr1(f)| next1(f)    | curr2(f)
 # |f1 U f2 | {f1}   | { f1 U f2 } | {f2}
 # |f1 R f2 | {f2}   | { f1 R f2 } | {f1,f2}
@@ -176,6 +203,7 @@ namespace Buechi (
             print "lgba:\n";
             print "form: " (LTL::to_text F) "\n";
             print "ap: " (LTL::ap F) "\n";
+            print "cf: " (cf F) "\n";
             print "nodes: " NODES "\n";
             print "now: " (Dict::to_list NOW) "\n";
             print "incoming " (Dict::to_list IN) "\n";
