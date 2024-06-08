@@ -147,7 +147,7 @@ namespace Buechi (
 
 )
 
-# Let (Nodes, Now, Incoming) = create_graph(f). An equivalent LGBA to f is A=(Nodes, 2AP, L, Δ, Q0, F), where
+# Let (Nodes, Now, Incoming) = create_graph(f). An equivalent LGBA to f is A=(Nodes, 2**AP, L, Δ, Q0, F), where
 # 
 # L = { (q,a) | q ∈ Nodes and (Now(q) ∩ AP) ⊆ a ⊆ {p ∈ AP | ¬p ∉ Now(q) } }
 # Δ = {(q,q')| q,q' ∈ Nodes and q ∈ Incoming(q') }
@@ -156,6 +156,20 @@ namespace Buechi (
 
 namespace Buechi (
     using System
+    using LTL
+
+    # I assume {(q,a)| q ∈ Nodes and a = {p ∈ AP | p ∈ Now(q) or ¬p ∉ Now(q) } } is meant in the above
+    # it also looks like p ∈ Now(q) iff ¬p ∉ Now(q) in the above construction
+    def to_labels =
+        [F NODES NOW ->
+            let AP = LTL::ap F in
+            List::map [Q -> (Q, List::filter [S -> let M = get NOW Q in or (List::elem (ltl_variable S) M) (not (List::elem (ltl_not (ltl_variable S)) M))] AP)] NODES]
+
+    def to_delta =
+        [NODES IN -> List::map [Q0 -> List::map [Q -> (Q,Q0)] (get IN Q0)] NODES |> List::flatten]
+
+    def to_q0 =
+        [NODES IN -> List::filter [Q -> List::elem 0 (get IN Q)] NODES]
 
     def to_lgba =
         [(F, NODES, NOW, IN) ->
@@ -165,6 +179,12 @@ namespace Buechi (
             print "nodes: " NODES "\n";
             print "now: " (Dict::to_list NOW) "\n";
             print "incoming " (Dict::to_list IN) "\n";
+            let L = to_labels F NODES NOW in
+            print "L: " L "\n";
+            let DELTA = to_delta NODES IN in
+            print "Delta: " DELTA "\n";
+            let Q0 = to_q0 NODES IN in
+            print "Q0: " Q0 "\n";
             none ]
 )
 
@@ -174,7 +194,7 @@ using System
 def main =
     Lexer::lexify LTL::lexemes "test" """
 form0: G foo;
-#form1: ~(b /\ (false -> c));
+form1: ~(b /\ (false -> c));
 """
     |> LTL::filter_whitespace
     |> LTL::parse
