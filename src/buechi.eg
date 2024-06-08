@@ -2,7 +2,7 @@ import "prelude.eg"
 import "ltl.eg"
 import "dictionary.eg"
 
-# LTL formula to graph. 
+# LTL formula to Buechi automaton. 
 # 
 # Taken from: https://en.wikipedia.org/wiki/Linear_temporal_logic_to_B%C3%BCchi_automaton
 
