@@ -231,6 +231,4 @@ form1: ~(b /\ (false -> c));
     |> List::map LTL::to_nnf
     |> List::map Buechi::to_graph
     |> List::map Buechi::to_lgba
-#    |> List::map LTL::pretty
-#    |> List::map [S -> print S "\n"]; none
 
