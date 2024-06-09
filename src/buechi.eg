@@ -182,7 +182,8 @@ namespace Buechi (
                 let A1 = List::filter [S -> not (List::elem (ltl_not (ltl_variable S)) M)] AP in
                 print (List::map LTL::to_text M) "\n";
                 print A0 " ⊆ a ⊆ " A1 "\n";
-                    (Q,A0) ]
+                let A = if A0 == {} then A1 else A0 in
+                    (Q,A) ]
                      NODES]
 
     def to_delta =
