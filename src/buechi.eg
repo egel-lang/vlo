@@ -111,14 +111,16 @@ namespace Buechi (
     def find =
         [P {} -> none |P {X|XX} -> if P X then X else find P XX]
 
+    def list_eq = [XX YY -> (List::sort XX) == (List::sort YY)]
+
     def expand =
         [{} O N I (NODES, IN, NOW, NEXT) ->
-            #print "expand:\n";
+            #print "######## expand ############\n";
             #print "curr: " (List::map LTL::to_text {}) "\nout: " (List::map LTL::to_text O) "\nnext: " (List::map LTL::to_text N) "\nin: " I "\n";
             #let P = do Dict::to_list |> List::map [(A, B) -> (A, List::map LTL::to_text B)] in
             #print "Nodes: " (NODES) "\nIncoming: " (Dict::to_list IN) "\nNow: " (P NOW) "\nNext: " (P NEXT) "\n";
             [none ->
-                let (Q, NODES) = [NN -> let N = List::length NN in (N,{N|NN})] NODES in
+                let (Q, NODES) = [NN -> let N = List::length NN + 1 in (N,{N|NN})] NODES in
                 let IN = set IN Q I in
                 let NOW = set NOW Q O in
                 let NEXT = set NEXT Q N in
@@ -127,9 +129,9 @@ namespace Buechi (
                 let IN = set IN Q (List::union (get IN Q) I) in
                 (NODES, IN, NOW, NEXT)
             ]
-            (find [Q -> and (get NEXT Q == N) (get NOW Q == O)] NODES)
+            (find [Q -> and (list_eq (get NEXT Q) N) (list_eq (get NOW Q) O)] NODES)
         |{F|FF} O N I (NODES, IN, NOW, NEXT) ->
-            #print "expand:\n";
+            #print "######## expand ############\n";
             #print "curr: " (List::map LTL::to_text {F|FF}) "\nout: " (List::map LTL::to_text O) "\nnext: " (List::map LTL::to_text N) "\nin: " I "\n";
             #let P = do Dict::to_list |> List::map [(A, B) -> (A, List::map LTL::to_text B)] in
             #print "Nodes: " (NODES) "\nIncoming: " (Dict::to_list IN) "\nNow: " (P NOW) "\nNext: " (P NEXT) "\n";
@@ -186,7 +188,7 @@ namespace Buechi (
                     (Q,A) ] NODES |> List::sort ]
 
     def to_delta =
-        [NODES IN -> List::map [Q0 -> List::map [Q -> (Q,Q0)] (get IN Q0)] NODES |> List::flatten |> List::sort]
+        [NODES IN -> List::map [Q0 -> List::map [Q -> (Q,Q0)] (List::difference (get IN Q0) {0})] NODES |> List::flatten |> List::sort]
 
     def to_q0 =
         [NODES IN -> List::filter [Q -> List::elem 0 (get IN Q)] NODES]
@@ -219,7 +221,7 @@ using System
 
 def main =
     Lexer::lexify LTL::lexemes "test" """
-a0: (X a) U (X b);
+a0: X a ; 
 #f: (G (~foo)) U bar;
 #form0: foo U (G bar);
 #form1: ~(b /\ (false -> c));
