@@ -113,10 +113,10 @@ namespace Buechi (
 
     def expand =
         [{} O N I (NODES, IN, NOW, NEXT) ->
-            print "expand:\n";
-            print "curr: " (List::map LTL::to_text {}) "\nout: " (List::map LTL::to_text O) "\nnext: " (List::map LTL::to_text N) "\nin: " I "\n";
-            let P = do Dict::to_list |> List::map [(A, B) -> (A, List::map LTL::to_text B)] in
-            print "Nodes: " (NODES) "\nIncoming: " (Dict::to_list IN) "\nNow: " (P NOW) "\nNext: " (P NEXT) "\n";
+            #print "expand:\n";
+            #print "curr: " (List::map LTL::to_text {}) "\nout: " (List::map LTL::to_text O) "\nnext: " (List::map LTL::to_text N) "\nin: " I "\n";
+            #let P = do Dict::to_list |> List::map [(A, B) -> (A, List::map LTL::to_text B)] in
+            #print "Nodes: " (NODES) "\nIncoming: " (Dict::to_list IN) "\nNow: " (P NOW) "\nNext: " (P NEXT) "\n";
             [none ->
                 let (Q, NODES) = [NN -> let N = List::length NN in (N,{N|NN})] NODES in
                 let IN = set IN Q I in
@@ -129,10 +129,10 @@ namespace Buechi (
             ]
             (find [Q -> and (get NEXT Q == N) (get NOW Q == O)] NODES)
         |{F|FF} O N I (NODES, IN, NOW, NEXT) ->
-            print "expand:\n";
-            print "curr: " (List::map LTL::to_text {F|FF}) "\nout: " (List::map LTL::to_text O) "\nnext: " (List::map LTL::to_text N) "\nin: " I "\n";
-            let P = do Dict::to_list |> List::map [(A, B) -> (A, List::map LTL::to_text B)] in
-            print "Nodes: " (NODES) "\nIncoming: " (Dict::to_list IN) "\nNow: " (P NOW) "\nNext: " (P NEXT) "\n";
+            #print "expand:\n";
+            #print "curr: " (List::map LTL::to_text {F|FF}) "\nout: " (List::map LTL::to_text O) "\nnext: " (List::map LTL::to_text N) "\nin: " I "\n";
+            #let P = do Dict::to_list |> List::map [(A, B) -> (A, List::map LTL::to_text B)] in
+            #print "Nodes: " (NODES) "\nIncoming: " (Dict::to_list IN) "\nNow: " (P NOW) "\nNext: " (P NEXT) "\n";
             let O = {F|O} in
             [ ltl_false ->
                 (NODES, IN, NOW, NEXT)
@@ -173,13 +173,17 @@ namespace Buechi (
     using System
     using LTL
 
-    # I assume {(q,a)| q ∈ Nodes and a = {p ∈ AP | p ∈ Now(q) or ¬p ∉ Now(q) } } is meant in the above
-    # it also looks like p ∈ Now(q) iff ¬p ∉ Now(q) in the above construction
     def to_labels =
         [F NODES NOW ->
             let AP = LTL::ap F in
-            #List::map [Q -> (Q, let M = get NOW Q in List::filter [S -> print "in L " S " " M "\n"; or (List::elem (ltl_variable S) M) (not (List::elem (ltl_not (ltl_variable S)) M))] AP)] NODES]
-            List::map [Q -> (Q, let M = get NOW Q in List::filter [S -> print "in L " S " " M "\n"; List::elem (ltl_variable S) M] AP)] NODES]
+            List::map [Q -> 
+                let M = get NOW Q in
+                let A0 = List::filter [S -> List::elem (ltl_variable S) M] AP in
+                let A1 = List::filter [S -> not (List::elem (ltl_not (ltl_variable S)) M)] AP in
+                print (List::map LTL::to_text M) "\n";
+                print A0 " ⊆ a ⊆ " A1 "\n";
+                    (Q,A0) ]
+                     NODES]
 
     def to_delta =
         [NODES IN -> List::map [Q0 -> List::map [Q -> (Q,Q0)] (get IN Q0)] NODES |> List::flatten]
@@ -195,8 +199,8 @@ namespace Buechi (
         [(F, NODES, NOW, IN) ->
             print "lgba:\n";
             print "form: " (LTL::to_text F) "\n";
-            print "ap: " (LTL::ap F) "\n";
-            print "cl: " (cl F) "\n";
+#            print "ap: " (LTL::ap F) "\n";
+#            print "cl: " (cl F) "\n";
             print "nodes: " NODES "\n";
             print "now: " (Dict::to_list NOW) "\n";
             print "incoming " (Dict::to_list IN) "\n";
@@ -216,12 +220,14 @@ using System
 
 def main =
     Lexer::lexify LTL::lexemes "test" """
-form0: foo U (G bar);
+f: (G (~foo)) U bar;
+#form0: foo U (G bar);
 #form1: ~(b /\ (false -> c));
 """
     |> LTL::filter_whitespace
     |> LTL::parse
     |> List::map snd 
+    |> [LL -> List::map [L -> print (LTL::to_text L) "\n"] LL; LL]
     |> List::map LTL::simplify
     |> List::map LTL::to_nnf
     |> List::map Buechi::to_graph
