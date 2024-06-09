@@ -178,7 +178,8 @@ namespace Buechi (
     def to_labels =
         [F NODES NOW ->
             let AP = LTL::ap F in
-            List::map [Q -> (Q, List::filter [S -> let M = get NOW Q in or (List::elem (ltl_variable S) M) (not (List::elem (ltl_not (ltl_variable S)) M))] AP)] NODES]
+            #List::map [Q -> (Q, let M = get NOW Q in List::filter [S -> print "in L " S " " M "\n"; or (List::elem (ltl_variable S) M) (not (List::elem (ltl_not (ltl_variable S)) M))] AP)] NODES]
+            List::map [Q -> (Q, let M = get NOW Q in List::filter [S -> print "in L " S " " M "\n"; List::elem (ltl_variable S) M] AP)] NODES]
 
     def to_delta =
         [NODES IN -> List::map [Q0 -> List::map [Q -> (Q,Q0)] (get IN Q0)] NODES |> List::flatten]
@@ -215,9 +216,8 @@ using System
 
 def main =
     Lexer::lexify LTL::lexemes "test" """
-#form0: G foo;
+form0: foo U (G bar);
 #form1: ~(b /\ (false -> c));
-form2: foo U (X bar);
 """
     |> LTL::filter_whitespace
     |> LTL::parse
