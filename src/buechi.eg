@@ -14,20 +14,17 @@ namespace Buechi (
     using List
 
     def neg =
-        [ ltl_false -> ltl_true
-        | ltl_true -> ltl_false
-        | F -> ltl_not F]
+        [ltl_false -> ltl_true
+        |ltl_true -> ltl_false
+        |F -> ltl_not F]
 
     def positive =
-        [ ltl_false -> {}
-        | ltl_true -> {}
-        | (ltl_variable S) -> {ltl_variable S}
-        | (ltl_not F) -> positive F
-        | (ltl_or F0 F1) -> positive F0 ++ positive F1 ++ {ltl_or F0 F1}
-        | (ltl_and F0 F1) -> positive F0 ++ positive F1 ++ {ltl_and F0 F1}
-        | (ltl_next F) -> positive F ++ {ltl_next F}
-        | (ltl_until F0 F1) -> positive F0 ++ positive F1 ++ {ltl_until F0 F1}
-        | (ltl_release F0 F1) -> positive F0 ++ positive F1 ++ {ltl_release F0 F1} ]
+        [ltl_false -> {}
+        |ltl_true -> {}
+        |(ltl_variable S) -> {ltl_variable S}
+        |(ltl_not F) -> positive F
+        |(OP F) -> positive F ++ {OP F}
+        |(OP F0 F1) -> positive F0 ++ positive F1 ++ {OP F0 F1}]
 
     def cl = do positive |> ((++) {ltl_true}) |> [FF -> FF ++ List::map neg FF] |> List::unique
 )
@@ -227,8 +224,9 @@ using System
 
 def main =
     Lexer::lexify LTL::lexemes "test" """
-form0: G foo;
-form1: ~(b /\ (false -> c));
+#form0: G foo;
+#form1: ~(b /\ (false -> c));
+form2: foo U (X bar);
 """
     |> LTL::filter_whitespace
     |> LTL::parse
