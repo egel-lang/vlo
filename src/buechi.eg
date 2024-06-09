@@ -133,7 +133,7 @@ namespace Buechi (
             #print "curr: " (List::map LTL::to_text {F|FF}) "\nout: " (List::map LTL::to_text O) "\nnext: " (List::map LTL::to_text N) "\nin: " I "\n";
             #let P = do Dict::to_list |> List::map [(A, B) -> (A, List::map LTL::to_text B)] in
             #print "Nodes: " (NODES) "\nIncoming: " (Dict::to_list IN) "\nNow: " (P NOW) "\nNext: " (P NEXT) "\n";
-            let O = {F|O} in
+            let O = List::union {F} O in
             [ ltl_false ->
                 (NODES, IN, NOW, NEXT)
             | ltl_true -> 
@@ -219,7 +219,7 @@ using System
 
 def main =
     Lexer::lexify LTL::lexemes "test" """
-a0: foo U (X bar);
+a0: (X a) U (X b);
 #f: (G (~foo)) U bar;
 #form0: foo U (G bar);
 #form1: ~(b /\ (false -> c));
