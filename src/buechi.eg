@@ -151,13 +151,7 @@ namespace Buechi (
             | (ltl_next F) ->
                 let N = List::union {F} N in
                 expand FF O N I (NODES, IN, NOW, NEXT)
-            | (ltl_or F0 F1) -> 
-                    expand (List::union FF (List::difference (curr2 F) O)) O N I
-                    (expand (List::union FF (List::difference (curr1 F) O)) O (List::union N (next1 F)) I (NODES, IN, NOW, NEXT))
-            | (ltl_until F0 F1) -> 
-                    expand (List::union FF (List::difference (curr2 F) O)) O N I
-                    (expand (List::union FF (List::difference (curr1 F) O)) O (List::union N (next1 F)) I (NODES, IN, NOW, NEXT))
-            | (ltl_release F0 F1) -> 
+            | (OP F0 F1) -> 
                     expand (List::union FF (List::difference (curr2 F) O)) O N I
                     (expand (List::union FF (List::difference (curr1 F) O)) O (List::union N (next1 F)) I (NODES, IN, NOW, NEXT))] F ]
 
