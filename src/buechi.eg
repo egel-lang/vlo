@@ -13,11 +13,6 @@ namespace Buechi (
     using System
     using List
 
-    def neg =
-        [ltl_false -> ltl_true
-        |ltl_true -> ltl_false
-        |F -> ltl_not F]
-
     def positive =
         [ltl_false -> {}
         |ltl_true -> {}
@@ -25,6 +20,8 @@ namespace Buechi (
         |(ltl_not F) -> positive F
         |(OP F) -> positive F ++ {OP F}
         |(OP F0 F1) -> positive F0 ++ positive F1 ++ {OP F0 F1}]
+
+    def neg = [ltl_true -> ltl_false |F -> ltl_not F]
 
     def cl = do positive |> ((++) {ltl_true}) |> [FF -> FF ++ List::map neg FF] |> List::unique
 )
