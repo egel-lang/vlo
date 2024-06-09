@@ -180,14 +180,13 @@ namespace Buechi (
                 let M = get NOW Q in
                 let A0 = List::filter [S -> List::elem (ltl_variable S) M] AP in
                 let A1 = List::filter [S -> not (List::elem (ltl_not (ltl_variable S)) M)] AP in
-                print (List::map LTL::to_text M) "\n";
-                print A0 " ⊆ a ⊆ " A1 "\n";
+                #print (List::map LTL::to_text M) "\n";
+                #print A0 " ⊆ a ⊆ " A1 "\n";
                 let A = if A0 == {} then A1 else A0 in
-                    (Q,A) ]
-                     NODES]
+                    (Q,A) ] NODES |> List::sort ]
 
     def to_delta =
-        [NODES IN -> List::map [Q0 -> List::map [Q -> (Q,Q0)] (get IN Q0)] NODES |> List::flatten]
+        [NODES IN -> List::map [Q0 -> List::map [Q -> (Q,Q0)] (get IN Q0)] NODES |> List::flatten |> List::sort]
 
     def to_q0 =
         [NODES IN -> List::filter [Q -> List::elem 0 (get IN Q)] NODES]
@@ -198,13 +197,12 @@ namespace Buechi (
 
     def to_lgba =
         [(F, NODES, NOW, IN) ->
-            print "lgba:\n";
+            print "################################\n";
             print "form: " (LTL::to_text F) "\n";
-#            print "ap: " (LTL::ap F) "\n";
-#            print "cl: " (cl F) "\n";
             print "nodes: " NODES "\n";
             print "now: " (Dict::to_list NOW) "\n";
             print "incoming " (Dict::to_list IN) "\n";
+            print "################################\n";
             let L = to_labels F NODES NOW in
             print "L: " L "\n";
             let DELTA = to_delta NODES IN in
@@ -213,7 +211,7 @@ namespace Buechi (
             print "Q0: " Q0 "\n";
             let FINAL = to_final F NODES NOW in
             print "F: " FINAL "\n";
-            none ]
+            none]
 )
 
 
@@ -221,7 +219,8 @@ using System
 
 def main =
     Lexer::lexify LTL::lexemes "test" """
-f: (G (~foo)) U bar;
+a0: foo U (X bar);
+#f: (G (~foo)) U bar;
 #form0: foo U (G bar);
 #form1: ~(b /\ (false -> c));
 """
