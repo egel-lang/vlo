@@ -115,10 +115,6 @@ namespace Buechi (
 
     def expand =
         [{} O N I (NODES, IN, NOW, NEXT) ->
-            #print "######## expand ############\n";
-            #print "curr: " (List::map LTL::to_text {}) "\nout: " (List::map LTL::to_text O) "\nnext: " (List::map LTL::to_text N) "\nin: " I "\n";
-            #let P = do Dict::to_list |> List::map [(A, B) -> (A, List::map LTL::to_text B)] in
-            #print "Nodes: " (NODES) "\nIncoming: " (Dict::to_list IN) "\nNow: " (P NOW) "\nNext: " (P NEXT) "\n";
             [none ->
                 let (Q, NODES) = [NN -> let N = List::length NN + 1 in (N,{N|NN})] NODES in
                 let IN = set IN Q I in
@@ -131,10 +127,6 @@ namespace Buechi (
             ]
             (find [Q -> and (list_eq (get NEXT Q) N) (list_eq (get NOW Q) O)] NODES)
         |{F|FF} O N I (NODES, IN, NOW, NEXT) ->
-            #print "######## expand ############\n";
-            #print "curr: " (List::map LTL::to_text {F|FF}) "\nout: " (List::map LTL::to_text O) "\nnext: " (List::map LTL::to_text N) "\nin: " I "\n";
-            #let P = do Dict::to_list |> List::map [(A, B) -> (A, List::map LTL::to_text B)] in
-            #print "Nodes: " (NODES) "\nIncoming: " (Dict::to_list IN) "\nNow: " (P NOW) "\nNext: " (P NEXT) "\n";
             let O = List::union {F} O in
             [ ltl_false ->
                 (NODES, IN, NOW, NEXT)
@@ -199,22 +191,24 @@ namespace Buechi (
 
     def to_lgba =
         [(F, NODES, NOW, IN) ->
-            print "################################\n";
-            print "form: " (LTL::to_text F) "\n";
-            print "nodes: " NODES "\n";
-            print "now: " (Dict::to_list NOW) "\n";
-            print "incoming " (Dict::to_list IN) "\n";
-            print "################################\n";
             let AP = LTL::ap F in
             let L = to_labels F NODES NOW in
-            print "L: " L "\n";
             let DELTA = to_delta NODES IN in
-            print "Delta: " DELTA "\n";
             let Q0 = to_q0 NODES IN in
-            print "Q0: " Q0 "\n";
             let FINAL = to_final F NODES NOW in
-            print "F: " FINAL "\n";
             (AP, L, DELTA, Q0, FINAL)]
+)
+
+namespace Buechi (
+    using System
+
+    def to_text =
+        [(AP, L, DELTA, Q0, FINAL) ->
+            (System::to_text AP) + "\n"
+            + (System::to_text L) + "\n"
+            + (System::to_text DELTA) + "\n"
+            + (System::to_text Q0) + "\n"
+            + (System::to_text FINAL) + "\n"]
 )
 
 
@@ -235,4 +229,6 @@ a0: a \/ c U (~b) ;
     |> List::map LTL::to_nnf
     |> List::map Buechi::to_graph
     |> List::map Buechi::to_lgba
+    |> List::map Buechi::to_text
+    |> List::map [S -> print S]
 
