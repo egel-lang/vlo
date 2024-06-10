@@ -205,6 +205,7 @@ namespace Buechi (
             print "now: " (Dict::to_list NOW) "\n";
             print "incoming " (Dict::to_list IN) "\n";
             print "################################\n";
+            let AP = LTL::ap F in
             let L = to_labels F NODES NOW in
             print "L: " L "\n";
             let DELTA = to_delta NODES IN in
@@ -213,7 +214,7 @@ namespace Buechi (
             print "Q0: " Q0 "\n";
             let FINAL = to_final F NODES NOW in
             print "F: " FINAL "\n";
-            none]
+            (AP, L, DELTA, Q0, FINAL)]
 )
 
 
@@ -221,7 +222,7 @@ using System
 
 def main =
     Lexer::lexify LTL::lexemes "test" """
-a0: X a ; 
+a0: a \/ c U (~b) ; 
 #f: (G (~foo)) U bar;
 #form0: foo U (G bar);
 #form1: ~(b /\ (false -> c));
