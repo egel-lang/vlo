@@ -176,7 +176,8 @@ namespace Buechi (
                 let A1 = List::filter [S -> not (List::elem (ltl_not (ltl_variable S)) M)] AP in
                 #print (List::map LTL::to_text M) "\n";
                 #print A0 " ⊆ a ⊆ " A1 "\n";
-                let A = if A0 == {} then A1 else A0 in
+                #let A = if A0 == {} then A1 else A0 in
+                let A = List::map ((List::++) A0) (List::power (List::difference A1 A0)) in
                     (Q,A) ] NODES |> List::sort ]
 
     def to_delta =
@@ -216,7 +217,8 @@ using System
 
 def main =
     Lexer::lexify LTL::lexemes "test" """
-a0: a \/ c U (~b) ; 
+response: G (a -> (F b));
+#a0: a \/ c U (~b) ; 
 #f: (G (~foo)) U bar;
 #form0: foo U (G bar);
 #form1: ~(b /\ (false -> c));
@@ -226,6 +228,7 @@ a0: a \/ c U (~b) ;
     |> List::map snd 
     |> [LL -> List::map [L -> print (LTL::to_text L) "\n"] LL; LL]
     |> List::map LTL::simplify
+    |> [LL -> List::map [L -> print (LTL::to_text L) "\n"] LL; LL]
     |> List::map LTL::to_nnf
     |> List::map Buechi::to_graph
     |> List::map Buechi::to_lgba
