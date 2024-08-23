@@ -217,7 +217,8 @@ using System
 
 def main =
     Lexer::lexify LTL::lexemes "test" """
-response: G (a -> (F b));
+a: a /\ ~b;
+#response: G (a -> (F b));
 #a0: a \/ c U (~b) ; 
 #f: (G (~foo)) U bar;
 #form0: foo U (G bar);
