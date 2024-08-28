@@ -19,7 +19,7 @@ namespace LTL (
 
     val break = Regex::compile "\n"
     def deltarow = [POS S -> deltax (Regex::split break S |> List::length) POS S]
-    def deltacol = [POS S -> deltay (Regex::split break S |> List::last |> String::length) POS S]
+    def deltacol = [POS S -> deltay (Regex::split break S |> List::last |> String::count) POS S]
 
     def lexemes =
     {

@@ -14,7 +14,7 @@ namespace Position (
 
     def deltay = [DY (position URL X Y) _ -> position URL X (Y System::+ DY)]
 
-    def deltal = [POS S -> deltay (String::length S) POS S]
+    def deltal = [POS S -> deltay (String::count S) POS S]
 
     def update = [FX FY POS S -> FX (FY POS S) S ]
 )
@@ -29,7 +29,7 @@ namespace Lexer (
     def match_class = 
         [(ID R FX FY) (POS, S) -> 
             Regex::look_match R S
-            ||> [ S0 -> (String::split (String::count_char S0) S) ] 
+            ||> [ S0 -> (String::split (String::count S0) S) ] 
             ||> [ (S0, S1) -> (ID POS S0, (update FX FY POS S0, S1)) ]]
 
     def try_all = [{} X -> none | {F|FF} X -> let Y = F X in if Y == none then try_all FF X else Y]
